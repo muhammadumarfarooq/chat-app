@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
     Container,
     Card,
@@ -15,38 +15,40 @@ import {
 } from "@mui/material";
 import ChatMessageList from '../src/components/ChatMessageList';
 import ChatMessageInput from '../src/components/ChatMessageInput';
+import io from 'socket.io-client';
 
-const messages = [
-    {id: 'abc', name: 'Umar', createdAt: new Date().toISOString(), text: "Hello"},
-    {id: 'abc', name: 'Umar', createdAt: new Date().toISOString(), text: "Hey, please reply!"},
-    {id: '123', name: 'Hassan', createdAt: new Date().toISOString(), text: "Hello"},
-    {id: '123', name: 'Hassan', createdAt: new Date().toISOString(), text: "How can I help you?"},
-    {id: 'abc', name: 'Umar', createdAt: new Date().toISOString(), text: "can you tell how to upload a file?"},
-    {id: '123', name: 'Hassan', createdAt: new Date().toISOString(), text: "Yes,"}, {
-        id: 'abc',
-        name: 'Umar',
-        createdAt: new Date().toISOString(),
-        text: "Hello"
-    },
-    {id: 'abc', name: 'Umar', createdAt: new Date().toISOString(), text: "Hey, please reply!"},
-    {id: '123', name: 'Hassan', createdAt: new Date().toISOString(), text: "Hello"},
-    {id: '123', name: 'Hassan', createdAt: new Date().toISOString(), text: "How can I help you?"},
-    {id: 'abc', name: 'Umar', createdAt: new Date().toISOString(), text: "can you tell how to upload a file?"},
-    {id: '123', name: 'Hassan', createdAt: new Date().toISOString(), text: "Yes,"},
-];
-
+let socket;
 export default function Index() {
     const [viewChat, setViewChat] = useState(false);
     const [name, setName] = useState('');
     const [room, setRoom] = useState('');
+    const [messages, setMessages] = useState([]);
 
-    const handleSendMessage = () => {
+    const handleSendMessage = (msg) => {
+        socket.emit('send-message', room, msg, () => {
+            setMessages([...messages, msg]);
+        });
     };
+
+    useEffect(() => {
+        socket = io('http://localhost:4000');
+        socket.on('connect', () => {
+            console.log('Connected successfully', socket.id);
+        });
+
+        socket.on('received-message', (message) => {
+            setMessages((prevState) => [...prevState, message]);
+        });
+    }, [])
+
 
     const onSubmit = (e) => {
         e.preventDefault();
         if (name && room) {
-            setViewChat(true);
+            socket.emit('join-room', room, () => {
+                setViewChat(true);
+                console.log('Room joined');
+            });
         }
     }
 
@@ -81,11 +83,12 @@ export default function Index() {
                         p: 0,
                         '&:last-child': {pb: 0}
                     }}>
-                        <ChatMessageList messages={messages}/>
+                        <ChatMessageList messages={messages} myId={socket.id}/>
                         <Divider/>
                         <ChatMessageInput
-                            conversationId=''
+                            myId={socket.id}
                             onSend={handleSendMessage}
+                            name={name}
                         />
                     </CardContent>
                 </Card>

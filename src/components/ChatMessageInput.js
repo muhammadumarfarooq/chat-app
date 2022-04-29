@@ -1,16 +1,16 @@
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import {useState} from 'react';
 // @mui
-import { styled } from '@mui/material/styles';
-import { Input, Divider, IconButton } from '@mui/material';
+import {styled} from '@mui/material/styles';
+import {Input, Divider, IconButton} from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 // utils
-import uid from 'uid';
+import {uid} from 'uid'
 // components
 
 // ----------------------------------------------------------------------
 
-const RootStyle = styled('div')(({ theme }) => ({
+const RootStyle = styled('div')(({theme}) => ({
     minHeight: 56,
     display: 'flex',
     position: 'relative',
@@ -21,13 +21,12 @@ const RootStyle = styled('div')(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 ChatMessageInput.propTypes = {
-    disabled: PropTypes.bool,
-    conversationId: PropTypes.string,
+    name: PropTypes.string,
+    userId: PropTypes.string,
     onSend: PropTypes.func,
 };
 
-export default function ChatMessageInput({ disabled, conversationId, onSend }) {
-
+export default function ChatMessageInput({myId, onSend, name}) {
     const [message, setMessage] = useState('');
 
     const handleKeyUp = (event) => {
@@ -38,26 +37,22 @@ export default function ChatMessageInput({ disabled, conversationId, onSend }) {
 
     const handleSend = () => {
         if (!message) {
-            return '';
+            return;
         }
-        if (onSend && conversationId) {
-            onSend({
-                conversationId,
-                messageId: uid(),
-                message,
-                contentType: 'text',
-                attachments: [],
-                createdAt: new Date(),
-                senderId: '8864c717-587d-472a-929a-8e5f298024da-0',
-            });
-        }
-        return setMessage('');
+
+        onSend({
+            userId: myId,
+            messageId: uid(),
+            message,
+            name,
+            createdAt: new Date(),
+        });
+        setMessage('');
     };
 
     return (
         <RootStyle>
             <Input
-                disabled={disabled}
                 fullWidth
                 value={message}
                 disableUnderline
@@ -66,10 +61,10 @@ export default function ChatMessageInput({ disabled, conversationId, onSend }) {
                 placeholder="Type a message"
             />
 
-            <Divider orientation="vertical" flexItem />
+            <Divider orientation="vertical" flexItem/>
 
-            <IconButton color="primary" disabled={!message} onClick={handleSend} sx={{ mx: 1 }}>
-                <SendIcon />
+            <IconButton color="primary" disabled={!message} onClick={handleSend} sx={{mx: 1}}>
+                <SendIcon/>
             </IconButton>
 
         </RootStyle>

@@ -5,7 +5,7 @@ import Scrollbar from "./Scrollbar";
 
 // ----------------------------------------------------------------------
 
-export default function ChatMessageList({messages}) {
+export default function ChatMessageList({messages, myId}) {
     const scrollRef = useRef(null);
 
     useEffect(() => {
@@ -17,13 +17,11 @@ export default function ChatMessageList({messages}) {
         scrollMessagesToBottom();
     }, [messages]);
 
-    const myId = 'abc'; // will update it.
-
     return (
         <Scrollbar scrollableNodeProps={{ref: scrollRef}} sx={{p: 3, height: 1}}>
             {messages.map((message) => (
                 <ChatMessageItem
-                    key={message.id}
+                    key={message.messageId}
                     message={message}
                     myId={myId}
                 />
